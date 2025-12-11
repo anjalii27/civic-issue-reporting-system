@@ -2,101 +2,155 @@
 import {
   Box,
   Button,
-  Flex,
-  Heading,
-  Input,
   FormControl,
   FormLabel,
-  VStack,
+  Heading,
+  Input,
+  Stack,
   Text,
-  Link as ChakraLink,
+  Link as ChakraLink
 } from "@chakra-ui/react";
-import { Link } from "react-router-dom";
+
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { API_URL } from "../utils/api";
 
 function LoginPage() {
+  const navigate = useNavigate();
+
+  // FORM STATE
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  // HANDLE INPUT CHANGE
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  // BACKEND LOGIN FUNCTION
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setLoading(false);
+        return alert(data.message || "Login failed");
+      }
+
+      alert("Login successful!");
+
+      // SAVE TOKEN + ROLE + USER ID
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.user.role);
+      localStorage.setItem("userId", data.user.id);
+
+      // REDIRECT BASED ON ROLE
+      if (data.user.role === "citizen") navigate("/user-dashboard");
+      else if (data.user.role === "admin") navigate("/admin-dashboard");
+      else if (data.user.role === "officer") navigate("/officer-dashboard");
+
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong");
+    }
+
+    setLoading(false);
+  };
+
   return (
-    <Flex
+    <Box
+      w="100%"
       minH="100vh"
-      bg="gray.50"
-      align="center"
-      justify="center"
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      bg="#f3f4f6"
       px={4}
     >
       <Box
-        w="100%"
-        maxW="420px"
-        bg="white"
+        w={{ base: "90%", md: "400px" }}
         p={8}
-        borderRadius="2xl"
-        boxShadow="2xl"
+        bg="white"
+        borderRadius="xl"
+        boxShadow="lg"
       >
-        <Heading
-          mb={2}
-          textAlign="center"
-          fontSize="2xl"
-          color="gray.800"
-        >
-          Welcome back 👋
+        <Heading textAlign="center" fontSize="2xl" color="gray.800">
+          Welcome Back
         </Heading>
-        <Text
-          mb={8}
-          textAlign="center"
-          fontSize="sm"
-          color="gray.500"
-        >
-          Login to continue reporting and tracking civic issues.
+
+        <Text mt={2} textAlign="center" fontSize="md" color="gray.500">
+          Login to continue reporting and managing civic issues
         </Text>
 
-        <VStack spacing={5}>
-          <FormControl>
-            <FormLabel fontSize="sm">Email</FormLabel>
-            <Input
-              type="email"
-              placeholder="you@example.com"
-              bg="gray.50"
-              focusBorderColor="purple.500"
-            />
-          </FormControl>
+        <form onSubmit={handleSubmit}>
+          <Stack spacing={4} mt={8}>
+            {/* EMAIL */}
+            <FormControl>
+              <FormLabel>Email</FormLabel>
+              <Input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </FormControl>
 
-          <FormControl>
-            <FormLabel fontSize="sm">Password</FormLabel>
-            <Input
-              type="password"
-              placeholder="Enter your password"
-              bg="gray.50"
-              focusBorderColor="purple.500"
-            />
-          </FormControl>
+            {/* PASSWORD */}
+            <FormControl>
+              <FormLabel>Password</FormLabel>
+              <Input
+                type="password"
+                name="password"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </FormControl>
 
-          <Button
-            mt={2}
-            w="100%"
-            colorScheme="purple"
-            size="md"
-            borderRadius="lg"
-          >
-            Login
-          </Button>
+            {/* LOGIN BUTTON */}
+            <Button
+              type="submit"
+              bg="purple.600"
+              color="white"
+              w="100%"
+              _hover={{ bg: "purple.700" }}
+              isLoading={loading}
+            >
+              Login
+            </Button>
+          </Stack>
+        </form>
 
-          <Text fontSize="sm" color="gray.600">
-            Don&apos;t have an account?{" "}
-            <ChakraLink as={Link} to="/register" color="purple.600">
-              Sign up
-            </ChakraLink>
-          </Text>
-
-          <ChakraLink
-            as={Link}
-            to="/"
-            fontSize="xs"
-            color="gray.500"
-            textAlign="center"
-          >
-            ← Back to home
+        <Text mt={4} textAlign="center">
+          Don’t have an account?{" "}
+          <ChakraLink as={Link} to="/register" color="purple.600">
+            Register
           </ChakraLink>
-        </VStack>
+        </Text>
       </Box>
-    </Flex>
+    </Box>
   );
 }
 

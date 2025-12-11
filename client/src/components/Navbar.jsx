@@ -1,23 +1,25 @@
-// src/components/Navbar.jsx
 import {
   Box,
   Flex,
   Heading,
   Link as ChakraLink,
-  Button,
+  Button
 } from "@chakra-ui/react";
-import { Link } from "react-router-dom";
-
-// TEMPORARY ROLE FOR TESTING
-// Change to "admin" to see admin UI
-// Change to "citizen" for user dashboard
-// Change to null for logged-out view
-//const userRole = "citizen";  
-// const userRole = "admin";
-//const userRole = null;
-const userRole = localStorage.getItem("role");
+import { Link, useNavigate } from "react-router-dom";
 
 function Navbar() {
+  const navigate = useNavigate();
+  const userRole = localStorage.getItem("role");   // citizen/admin/officer/null
+
+  // Logout function
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userId");
+    navigate("/");
+    window.location.reload();
+  };
+
   return (
     <Box
       bg="white"
@@ -49,38 +51,62 @@ function Navbar() {
         {/* RIGHT: Auth / Dashboard Buttons */}
         <Flex gap={6} align="center">
 
-          {/* Citizen Dashboard */}
-          {userRole === "citizen" && (
-            <ChakraLink as={Link} to="/dashboard" color="gray.700">
-              Dashboard
-            </ChakraLink>
-          )}
-
-          {/* Admin Dashboard */}
-          {userRole === "admin" && (
-            <ChakraLink as={Link} to="/admin" color="gray.700">
-              Admin Panel
-            </ChakraLink>
-          )}
-
-          {/* If NOT logged in, show Login and Sign Up */}
+          {/* If user is NOT logged in → show Login + Sign Up */}
           {!userRole && (
             <>
               <ChakraLink as={Link} to="/login" color="gray.700">
                 Login
               </ChakraLink>
 
-              <Button
+              <ChakraLink
                 as={Link}
                 to="/register"
                 bg="purple.600"
                 color="white"
-                _hover={{ bg: "purple.700" }}
+                px={4}
+                py={2}
                 borderRadius="md"
+                _hover={{ bg: "purple.700" }}
               >
                 Sign Up
-              </Button>
+              </ChakraLink>
             </>
+          )}
+
+          {/* Citizen Dashboard */}
+          {userRole === "citizen" && (
+            <ChakraLink as={Link} to="/user-dashboard" color="gray.700">
+              Dashboard
+            </ChakraLink>
+          )}
+
+          {/* Admin Dashboard */}
+          {userRole === "admin" && (
+            <ChakraLink as={Link} to="/admin-dashboard" color="gray.700">
+              Admin Panel
+            </ChakraLink>
+          )}
+
+          {/* Officer Dashboard */}
+          {userRole === "officer" && (
+            <ChakraLink as={Link} to="/officer-dashboard" color="gray.700">
+              Officer Panel
+            </ChakraLink>
+          )}
+
+          {/* If user is logged in → show Logout */}
+          {userRole && (
+            <Button
+              bg="red.500"
+              color="white"
+              px={4}
+              py={2}
+              borderRadius="md"
+              _hover={{ bg: "red.600" }}
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
           )}
         </Flex>
       </Flex>

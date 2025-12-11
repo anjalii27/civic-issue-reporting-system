@@ -1,4 +1,3 @@
-// src/pages/RegisterPage.jsx
 import {
   Box,
   Button,
@@ -12,16 +11,62 @@ import {
   Select,
   Link as ChakraLink,
 } from "@chakra-ui/react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { API_URL } from "../utils/api";
 
 function RegisterPage() {
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "citizen",
+  });
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message);
+        return;
+      }
+
+      alert("Registration successful! Please login.");
+      navigate("/login");
+
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong.");
+    }
+  };
+
   return (
     <Flex
       minH="100vh"
       bg="gray.50"
       align="center"
       justify="center"
-      px={4}
+      p={4}
     >
       <Box
         w="100%"
@@ -31,94 +76,82 @@ function RegisterPage() {
         borderRadius="2xl"
         boxShadow="2xl"
       >
-        <Heading
-          mb={2}
-          textAlign="center"
-          fontSize="2xl"
-          color="gray.800"
-        >
+        <Heading mb={2} textAlign="center" fontSize="2xl" color="gray.800">
           Create your account
         </Heading>
-        <Text
-          mb={8}
-          textAlign="center"
-          fontSize="sm"
-          color="gray.500"
-        >
-          Join CivicSense and start improving your community.
+
+        <Text mb={8} textAlign="center" fontSize="sm" color="gray.500">
+          Join CivicSense to report and track civic issues!
         </Text>
 
-        <VStack spacing={5}>
-          <FormControl>
-            <FormLabel fontSize="sm">Full Name</FormLabel>
-            <Input
-              type="text"
-              placeholder="Your Name"
-              bg="gray.50"
-              focusBorderColor="purple.500"
-            />
-          </FormControl>
+        <form onSubmit={handleSubmit}>
+          <VStack spacing={4}>
 
-          <FormControl>
-            <FormLabel fontSize="sm">Email</FormLabel>
-            <Input
-              type="email"
-              placeholder="you@example.com"
-              bg="gray.50"
-              focusBorderColor="purple.500"
-            />
-          </FormControl>
+            <FormControl>
+              <FormLabel>Full Name</FormLabel>
+              <Input
+                name="name"
+                placeholder="Enter your name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </FormControl>
 
-          <FormControl>
-            <FormLabel fontSize="sm">Password</FormLabel>
-            <Input
-              type="password"
-              placeholder="Create a password"
-              bg="gray.50"
-              focusBorderColor="purple.500"
-            />
-          </FormControl>
+            <FormControl>
+              <FormLabel>Email</FormLabel>
+              <Input
+                name="email"
+                type="email"
+                placeholder="your@email.com"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </FormControl>
 
-          <FormControl>
-            <FormLabel fontSize="sm">Role</FormLabel>
-            <Select
-              bg="gray.50"
-              focusBorderColor="purple.500"
-              defaultValue="citizen"
+            <FormControl>
+              <FormLabel>Password</FormLabel>
+              <Input
+                name="password"
+                type="password"
+                placeholder="Enter password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Role</FormLabel>
+              <Select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+              >
+                <option value="citizen">Citizen</option>
+                <option value="officer">Officer</option>
+                <option value="admin">Admin</option>
+              </Select>
+            </FormControl>
+
+            <Button
+              type="submit"
+              colorScheme="purple"
+              width="100%"
+              mt={4}
             >
-              <option value="citizen">Citizen</option>
-              <option value="official">Municipal Officer</option>
-              <option value="admin">Admin</option>
-            </Select>
-          </FormControl>
+              Register
+            </Button>
+          </VStack>
+        </form>
 
-          <Button
-            mt={2}
-            w="100%"
-            colorScheme="purple"
-            size="md"
-            borderRadius="lg"
-          >
-            Sign Up
-          </Button>
-
-          <Text fontSize="sm" color="gray.600">
-            Already have an account?{" "}
-            <ChakraLink as={Link} to="/login" color="purple.600">
-              Login
-            </ChakraLink>
-          </Text>
-
-          <ChakraLink
-            as={Link}
-            to="/"
-            fontSize="xs"
-            color="gray.500"
-            textAlign="center"
-          >
-            ← Back to home
+        <Text mt={4} textAlign="center">
+          Already have an account?{" "}
+          <ChakraLink as={Link} color="purple.600" to="/login">
+            Login
           </ChakraLink>
-        </VStack>
+        </Text>
       </Box>
     </Flex>
   );

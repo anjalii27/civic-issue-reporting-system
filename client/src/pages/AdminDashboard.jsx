@@ -1,139 +1,215 @@
-// src/pages/AdminDashboard.jsx
 import {
   Box,
-  Heading,
-  Text,
-  Badge,
   Button,
   Flex,
-  SimpleGrid,
-  Image,
+  Heading,
+  Text,
   VStack,
+  Spinner,
   Select,
 } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-// TEMP mock data — will be replaced by backend
-const allIssues = [
-  {
-    id: 1,
-    title: "Pothole near Sector 12",
-    status: "Pending",
-    category: "Pothole",
-    date: "Dec 3, 2024",
-    image:
-      "https://images.unsplash.com/photo-1606207523649-59c9f1a4bb7a?auto=format&fit=crop&w=400&q=60",
-    reportedBy: "Anjali Singh",
-  },
-  {
-    id: 2,
-    title: "Streetlight not working",
-    status: "In Progress",
-    category: "Streetlight",
-    date: "Nov 29, 2024",
-    image:
-      "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=400&q=60",
-    reportedBy: "Rahul Verma",
-  },
-  {
-    id: 3,
-    title: "Garbage not collected",
-    status: "Resolved",
-    category: "Garbage",
-    date: "Nov 20, 2024",
-    image:
-      "https://images.unsplash.com/photo-1581574209463-cb1f0b1c07ba?auto=format&fit=crop&w=400&q=60",
-    reportedBy: "Neha Sharma",
-  },
-];
+import { API_URL } from "../utils/api";
 
 function AdminDashboard() {
+  const [issues, setIssues] = useState([]);
+  const [officers, setOfficers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    fetchAllIssues();
+    fetchAllOfficers();
+  }, []);
+
+  // Fetch all issues
+  const fetchAllIssues = async () => {
+    try {
+      setLoading(true);
+
+      const res = await fetch(`${API_URL}/api/issues`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json();
+      setIssues(data);
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      alert("Error fetching issues");
+      setLoading(false);
+    }
+  };
+
+  // Fetch all officers
+  const fetchAllOfficers = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/auth/officers`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json();
+      setOfficers(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Assign officer to issue
+  const assignOfficer = async (issueId, officerId) => {
+    try {
+      const res = await fetch(`${API_URL}/api/issues/assign/${issueId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ assignedTo: officerId }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message);
+        return;
+      }
+
+      alert("Officer assigned successfully!");
+      fetchAllIssues();
+    } catch (err) {
+      console.error(err);
+      alert("Error assigning officer");
+    }
+  };
+
+  // Update issue status
+  const updateStatus = async (issueId, newStatus) => {
+    try {
+      const res = await fetch(`${API_URL}/api/issues/status/${issueId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message);
+        return;
+      }
+
+      alert("Status updated successfully!");
+      fetchAllIssues();
+    } catch (err) {
+      console.error(err);
+      alert("Error updating status");
+    }
+  };
+
   return (
-    <Box bg="gray.50" minH="100vh" p={8}>
-      {/* Header */}
-      <Flex justify="space-between" align="center" mb={8}>
-        <Heading fontSize="2xl">Admin Dashboard</Heading>
+    <Flex direction="column" p={8} bg="gray.50" minH="100vh">
+      
+      <Flex justify="space-between" align="center" mb={6}>
+        <Heading fontSize="2xl" color="purple.700">
+          Admin Dashboard
+        </Heading>
+
+        <Button colorScheme="purple" onClick={fetchAllIssues}>
+          Refresh
+        </Button>
       </Flex>
 
-      {/* Card Grid */}
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-        {allIssues.map((issue) => (
+      {loading && (
+        <Flex justify="center" mt={10}>
+          <Spinner size="xl" color="purple.500" />
+        </Flex>
+      )}
+
+      {!loading && issues.length === 0 && (
+        <Text fontSize="lg" color="gray.500">
+          No issues reported yet.
+        </Text>
+      )}
+
+      <VStack spacing={5} align="stretch">
+        {issues.map((issue) => (
           <Box
-            key={issue.id}
+            key={issue._id}
             bg="white"
+            p={6}
             borderRadius="xl"
-            boxShadow="md"
-            overflow="hidden"
-            transition="0.25s"
-            _hover={{ transform: "translateY(-6px)", boxShadow: "xl" }}
+            boxShadow="lg"
+            borderLeft="6px solid #6B46C1"
           >
-            {/* Image */}
-            <Image
-              src={issue.image}
-              height="160px"
-              width="100%"
-              objectFit="cover"
-            />
+            <Heading fontSize="lg" color="purple.700">
+              {issue.title}
+            </Heading>
 
-            <VStack align="start" spacing={3} p={5}>
-              {/* Title */}
-              <Heading fontSize="lg">{issue.title}</Heading>
+            <Text mt={2} color="gray.700">
+              {issue.description}
+            </Text>
 
-              {/* Reporter */}
-              <Text fontSize="sm" color="gray.600">
-                Reported by: <strong>{issue.reportedBy}</strong>
+            <Text mt={3} fontWeight="bold" color="purple.600">
+              Status: {issue.status}
+            </Text>
+
+            {/* Officer Assignment */}
+            <Text mt={4} fontWeight="bold">
+              Assign Officer:
+            </Text>
+
+            <Select
+              placeholder="Select officer"
+              onChange={(e) => assignOfficer(issue._id, e.target.value)}
+              mt={1}
+            >
+              {officers.map((officer) => (
+                <option key={officer._id} value={officer._id}>
+                  {officer.name}
+                </option>
+              ))}
+            </Select>
+
+            {issue.assignedTo && (
+              <Text mt={1} fontSize="sm">
+                Assigned: {issue.assignedTo.name}
               </Text>
+            )}
 
-              {/* Category */}
-              <Badge colorScheme="purple">{issue.category}</Badge>
+            {/* Status Update */}
+            <Text mt={4} fontWeight="bold">
+              Update Status:
+            </Text>
 
-              {/* Status */}
-              <Badge
-                colorScheme={
-                  issue.status === "Resolved"
-                    ? "green"
-                    : issue.status === "In Progress"
-                    ? "orange"
-                    : "red"
-                }
-              >
-                {issue.status}
-              </Badge>
+            <Select
+              placeholder="Change status"
+              mt={1}
+              onChange={(e) => updateStatus(issue._id, e.target.value)}
+            >
+              <option value="Verified">Verified</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+            </Select>
 
-              {/* Date */}
-              <Text fontSize="sm" color="gray.500">
-                {issue.date}
-              </Text>
-
-              {/* Status Dropdown (Admin Control) */}
-              <Select
-                defaultValue={issue.status}
-                size="sm"
-                borderRadius="md"
-                focusBorderColor="purple.500"
-              >
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Resolved">Resolved</option>
-              </Select>
-
-              {/* View Details */}
-              <Button
-                as={Link}
-                to={`/issue/${issue.id}`}
-                w="100%"
-                colorScheme="purple"
-                variant="outline"
-                borderRadius="lg"
-                mt={2}
-              >
-                View Details
-              </Button>
-            </VStack>
+            {/* View full details */}
+            <Button
+              as={Link}
+              to={`/issue/${issue._id}`}
+              colorScheme="purple"
+              size="sm"
+              mt={4}
+            >
+              View Details
+            </Button>
           </Box>
         ))}
-      </SimpleGrid>
-    </Box>
+      </VStack>
+    </Flex>
   );
 }
 

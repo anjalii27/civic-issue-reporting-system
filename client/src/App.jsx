@@ -1,5 +1,6 @@
 // src/App.jsx
 import { Routes, Route } from "react-router-dom";
+import OfficerDashboard from "./pages/OfficerDashboard";
 
 // Components & Sections
 import Navbar from "./components/Navbar";
@@ -42,12 +43,14 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
 
         {/* Issue Reporting */}
-        <Route path="/report" element={<ReportIssue />} />
+        <Route path="/report-issue" element={<ReportIssue />} />
         <Route path="/issue/:id" element={<IssueDetails />} />
 
         {/* Dashboards */}
-        <Route path="/dashboard" element={<UserDashboard />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/user-dashboard" element={<UserDashboard />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/officer-dashboard" element={<OfficerDashboard />} />
+
       </Routes>
     </>
   );
