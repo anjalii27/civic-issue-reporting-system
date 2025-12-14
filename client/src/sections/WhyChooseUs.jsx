@@ -21,11 +21,12 @@ const features = [
 
 function WhyChooseUs() {
   return (
-    <Box py={20} bg="white">
+    <Box id="features" py={20} bg="white">
       <Box maxW="1100px" mx="auto" textAlign="center" px={6}>
         <Heading mb={4} color="gray.800">
           Why Choose CivicSense?
         </Heading>
+
         <Text fontSize="lg" color="gray.600" mb={12}>
           Our platform makes it easy to report, track, and resolve civic issues.
         </Text>

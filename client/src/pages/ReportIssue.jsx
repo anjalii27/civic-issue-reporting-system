@@ -10,6 +10,7 @@ import {
   Textarea,
   Stack,
 } from "@chakra-ui/react";
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../utils/api";
@@ -24,7 +25,7 @@ function ReportIssue() {
     description: "",
     category: "",
     location: "",
-    imageUrl: "",
+    imageFile: null,
   });
 
   const handleChange = (e) => {
@@ -41,13 +42,24 @@ function ReportIssue() {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch(`${API_URL}/api/issues/create`, {
+      // FormData for file upload
+      const formDataToSend = new FormData();
+      formDataToSend.append("title", formData.title);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("category", formData.category);
+      formDataToSend.append("location", formData.location);
+
+      // Append image only if selected
+      if (formData.imageFile) {
+        formDataToSend.append("image", formData.imageFile);
+      }
+
+      const res = await fetch(`${API_URL}/api/issues`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // No content-type for FormData
         },
-        body: JSON.stringify(formData),
+        body: formDataToSend,
       });
 
       const data = await res.json();
@@ -59,6 +71,7 @@ function ReportIssue() {
 
       alert("Issue reported successfully!");
       navigate("/user-dashboard");
+
     } catch (err) {
       console.error(err);
       alert("Something went wrong");
@@ -90,6 +103,7 @@ function ReportIssue() {
 
         <form onSubmit={handleSubmit}>
           <Stack spacing={4}>
+
             <FormControl>
               <FormLabel>Issue Title</FormLabel>
               <Input
@@ -127,25 +141,29 @@ function ReportIssue() {
                 <option value="Street Light">Street Light</option>
               </Select>
             </FormControl>
+        
+            <FormControl>
+             <FormLabel>Location</FormLabel>
+              <Input
+               name="location"
+              value={formData.location}
+              onChange={handleChange}
+              placeholder="Enter location"
+              required
+            />
+         </FormControl>
 
             <FormControl>
-              <FormLabel>Location</FormLabel>
+              <FormLabel>Upload Image</FormLabel>
               <Input
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                placeholder="Enter location"
-                required
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel>Image URL (optional)</FormLabel>
-              <Input
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleChange}
-                placeholder="Paste image URL if available"
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    imageFile: e.target.files[0],
+                  })
+                }
               />
             </FormControl>
 
@@ -158,6 +176,7 @@ function ReportIssue() {
             >
               Submit Issue
             </Button>
+
           </Stack>
         </form>
       </Box>

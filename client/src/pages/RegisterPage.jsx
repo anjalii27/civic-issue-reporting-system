@@ -8,9 +8,9 @@ import {
   FormLabel,
   VStack,
   Text,
-  Select,
   Link as ChakraLink,
 } from "@chakra-ui/react";
+
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { API_URL } from "../utils/api";
@@ -22,7 +22,6 @@ function RegisterPage() {
     name: "",
     email: "",
     password: "",
-    role: "citizen",
   });
 
   const handleChange = (e) => {
@@ -36,24 +35,25 @@ function RegisterPage() {
     e.preventDefault();
 
     try {
+      console.log("Sending data:", formData);
+
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formData), // sending only name, email, password
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message);
+        alert(data.message || "Registration failed");
         return;
       }
 
       alert("Registration successful! Please login.");
       navigate("/login");
-
     } catch (error) {
       console.error(error);
       alert("Something went wrong.");
@@ -61,13 +61,7 @@ function RegisterPage() {
   };
 
   return (
-    <Flex
-      minH="100vh"
-      bg="gray.50"
-      align="center"
-      justify="center"
-      p={4}
-    >
+    <Flex minH="100vh" bg="gray.50" align="center" justify="center" p={4}>
       <Box
         w="100%"
         maxW="480px"
@@ -84,9 +78,9 @@ function RegisterPage() {
           Join CivicSense to report and track civic issues!
         </Text>
 
+        {/* IMPORTANT — only this form, NO register() call anywhere */}
         <form onSubmit={handleSubmit}>
           <VStack spacing={4}>
-
             <FormControl>
               <FormLabel>Full Name</FormLabel>
               <Input
@@ -122,25 +116,7 @@ function RegisterPage() {
               />
             </FormControl>
 
-            <FormControl>
-              <FormLabel>Role</FormLabel>
-              <Select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-              >
-                <option value="citizen">Citizen</option>
-                <option value="officer">Officer</option>
-                <option value="admin">Admin</option>
-              </Select>
-            </FormControl>
-
-            <Button
-              type="submit"
-              colorScheme="purple"
-              width="100%"
-              mt={4}
-            >
+            <Button type="submit" colorScheme="purple" width="100%" mt={4}>
               Register
             </Button>
           </VStack>

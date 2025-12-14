@@ -1,12 +1,16 @@
 import {
-  Box,
-  Button,
   Flex,
   Heading,
   Text,
-  VStack,
   Spinner,
   Select,
+  Image,
+  Box,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalBody,
+  useDisclosure
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -21,6 +25,7 @@ function IssueDetails() {
 
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     fetchIssue();
@@ -157,22 +162,35 @@ function IssueDetails() {
 
         {/* Image Preview */}
         {issue.imageUrl && (
-          <Box mt={5}>
-            <Text fontWeight="bold" mb={2}>
-              Issue Image:
-            </Text>
-            <img
-              src={issue.imageUrl}
-              alt="Issue"
-              style={{
-                width: "100%",
-                maxHeight: "300px",
-                objectFit: "cover",
-                borderRadius: "12px",
-              }}
-            />
-          </Box>
-        )}
+  <>
+    {/* Small Preview */}
+    <Image
+      src={`${API_URL}${issue.imageUrl}`}
+      alt="Issue"
+      boxSize="150px"
+      objectFit="cover"
+      borderRadius="md"
+      cursor="pointer"
+      onClick={onOpen}
+      border="2px solid #ddd"
+    />
+
+    {/* Modal for Enlarged Image */}
+    <Modal isOpen={isOpen} onClose={onClose} isCentered size="xl">
+      <ModalOverlay />
+      <ModalContent>
+        <ModalBody p={0}>
+          <Image
+            src={`${API_URL}${issue.imageUrl}`}
+            alt="Issue Large Preview"
+            width="100%"
+            borderRadius="md"
+          />
+        </ModalBody>
+      </ModalContent>
+    </Modal>
+  </>
+)}
 
         {/* Status */}
         <Text mt={4} fontWeight="bold" color="purple.500">

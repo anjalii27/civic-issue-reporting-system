@@ -1,10 +1,17 @@
+import { Box } from "@chakra-ui/react";
 import Hero from "../sections/Hero";
+import WhyChooseUs from "../sections/WhyChooseUs";
+import Footer from "../components/Footer";
 
 function HomePage() {
   return (
-    <>
-      <Hero />
-    </>
+    <Box id="top">
+      <>
+        <Hero />
+        <WhyChooseUs />
+        <Footer />
+      </>
+    </Box>
   );
 }
 

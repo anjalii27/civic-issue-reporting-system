@@ -2,21 +2,30 @@ const express = require("express");
 const Issue = require("../models/Issue");
 const { protect, officerOrAdmin } = require("../middleware/authMiddleware");
 const router = express.Router();
+const upload = require("../middleware/upload");
 
 /*
   CREATE ISSUE
   This route allows a logged‑in citizen to submit a new civic issue.
 */
-router.post("/create", protect, async (req, res) => {
+router.post("/", protect, upload.single("image"), async (req, res) => {
   try {
+    const { title, description, category, location } = req.body;
+
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : "";
+
     const issue = await Issue.create({
-      ...req.body,
+      title,
+      description,
+      category,
+      locationText: location,
+      imageUrl,
       createdBy: req.user._id,
     });
 
-    res.json({ message: "Issue created successfully", issue });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.json(issue);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 

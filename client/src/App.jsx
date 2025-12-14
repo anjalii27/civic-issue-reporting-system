@@ -1,6 +1,7 @@
 // src/App.jsx
 import { Routes, Route } from "react-router-dom";
-import OfficerDashboard from "./pages/OfficerDashboard";
+import AddOfficer from "./pages/admin/AddOfficer";
+
 
 // Components & Sections
 import Navbar from "./components/Navbar";
@@ -16,6 +17,8 @@ import UserDashboard from "./pages/UserDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import ReportIssue from "./pages/ReportIssue";
 import IssueDetails from "./pages/IssueDetails";
+import OfficerDashboard from "./pages/officer/OfficerDashboard";
+import OfficerIssueDetails from "./pages/officer/OfficerIssueDetails";
 
 function App() {
   return (
@@ -41,10 +44,12 @@ function App() {
         {/* Auth Pages */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/admin/add-officer" element={<AddOfficer />} />
 
         {/* Issue Reporting */}
         <Route path="/report-issue" element={<ReportIssue />} />
         <Route path="/issue/:id" element={<IssueDetails />} />
+        <Route path="/officer/issue/:id" element={<OfficerIssueDetails />} />
 
         {/* Dashboards */}
         <Route path="/user-dashboard" element={<UserDashboard />} />

@@ -1,37 +1,43 @@
-import { Box, Flex, Heading, Text, VStack } from "@chakra-ui/react";
+import { Box, Flex, Text, Link, VStack } from "@chakra-ui/react";
 
 function Footer() {
   return (
-    <Box bg="gray.900" color="gray.300" py={16} mt={20}>
+    <Box id="contact" bg="gray.900" color="white" py={10} px={8} mt={20}>
       <Flex
         maxW="1200px"
         mx="auto"
-        px={6}
         justify="space-between"
-        direction={{ base: "column", md: "row" }}
+        flexWrap="wrap"
         gap={10}
       >
-        <VStack align="start" spacing={3}>
-          <Heading fontSize="2xl" color="white">CivicSense</Heading>
-          <Text maxW="300px">
+        {/* LEFT SECTION */}
+        <VStack align="flex-start" spacing={3}>
+          <Text fontWeight="bold" fontSize="xl">
+            CivicSense
+          </Text>
+          <Text maxW="260px" color="gray.400">
             Empowering communities to report, track, and resolve civic issues.
           </Text>
-          <Text fontSize="sm">© 2024 CivicSense. All rights reserved.</Text>
+          <Text color="gray.500">© 2024 CivicSense. All rights reserved.</Text>
         </VStack>
 
-        <VStack align="start" spacing={2}>
-          <Heading fontSize="lg" color="white">Quick Links</Heading>
-          <Text>Home</Text>
-          <Text>Features</Text>
-          <Text>Contact</Text>
+        {/* QUICK LINKS */}
+        <VStack align="flex-start" spacing={2}>
+          <Text fontWeight="bold">Quick Links</Text>
+
+          <Link href="#top" color="gray.400" _hover={{ color: "white" }}>
+            Home
+          </Link>
+
+          <Link href="#features" color="gray.400" _hover={{ color: "white" }}>
+            Features
+          </Link>
+
+          <Link href="#contact" color="gray.400" _hover={{ color: "white" }}>
+            Contact
+          </Link>
         </VStack>
 
-        <VStack align="start" spacing={2}>
-          <Heading fontSize="lg" color="white">Support</Heading>
-          <Text>Privacy Policy</Text>
-          <Text>Terms of Service</Text>
-          <Text>FAQ</Text>
-        </VStack>
       </Flex>
     </Box>
   );

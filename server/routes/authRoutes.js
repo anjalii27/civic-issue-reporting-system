@@ -8,18 +8,22 @@ const router = express.Router();
 // REGISTER
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    console.log("REGISTER ROUTE HIT"); // ✔ OK (no req.body here)
+
+    const { name, email, password } = req.body;
 
     const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ message: "Email already used" });
+    if (exists) {
+      return res.status(400).json({ message: "Email already used" });
+    }
 
     const hashed = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
       email,
-      role: role || "citizen",
       password: hashed,
+      role: "citizen",
     });
 
     res.json({ message: "Registration successful", user });
@@ -52,15 +56,6 @@ router.post("/login", async (req, res) => {
         role: user.role,
       },
     });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-// GET ALL OFFICERS (Admin use)
-router.get("/officers", async (req, res) => {
-  try {
-    const officers = await User.find({ role: "officer" }).select("name email");
-    res.json(officers);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

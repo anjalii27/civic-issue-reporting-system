@@ -1,21 +1,35 @@
+// server/server.js
 const express = require("express");
-const dotenv = require("dotenv");
+const mongoose = require("mongoose");
+const path = require("path");
 const cors = require("cors");
-const connectDB = require("./config/db");
+require("dotenv").config();
 
-dotenv.config();
-
+// ✅ app must be declared BEFORE using app.use()
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Connect database
-connectDB();
+// Static Upload Folder
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/issues", require("./routes/issueRoutes"));
+app.use("/api/stats", require("./routes/statsRoutes"));
+app.use("/api/admin", require("./routes/adminRoutes"));
 
-app.listen(process.env.PORT, () =>
-  console.log(`Server running on http://localhost:${process.env.PORT}`)
-);
+// Database Connection + Server Start
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("MongoDB Connected");
+    app.listen(5000, () =>
+      console.log("Server running at http://localhost:5000")
+    );
+  })
+  .catch((err) => {
+    console.error("Database Connection Error:", err);
+  });
