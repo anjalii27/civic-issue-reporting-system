@@ -1,6 +1,7 @@
 // src/App.jsx
 import { Routes, Route } from "react-router-dom";
 import AddOfficer from "./pages/admin/AddOfficer";
+import AddAdmin from "./pages/admin/AddAdmin";
 
 
 // Components & Sections
@@ -45,6 +46,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/admin/add-officer" element={<AddOfficer />} />
+        <Route path="/admin/add-admin" element={<AddAdmin />} />
 
         {/* Issue Reporting */}
         <Route path="/report-issue" element={<ReportIssue />} />

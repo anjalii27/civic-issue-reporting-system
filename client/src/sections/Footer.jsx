@@ -18,7 +18,6 @@ function Footer() {
           <Text maxW="260px" color="gray.400">
             Empowering communities to report, track, and resolve civic issues.
           </Text>
-          <Text color="gray.500">© 2024 CivicSense. All rights reserved.</Text>
         </VStack>
 
         {/* QUICK LINKS */}
@@ -31,10 +30,6 @@ function Footer() {
 
           <Link href="#features" color="gray.400" _hover={{ color: "white" }}>
             Features
-          </Link>
-
-          <Link href="#contact" color="gray.400" _hover={{ color: "white" }}>
-            Contact
           </Link>
         </VStack>
 

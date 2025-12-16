@@ -15,6 +15,9 @@ import { API_URL } from "../utils/api";
 function AdminDashboard() {
   const [issues, setIssues] = useState([]);
   const [officers, setOfficers] = useState([]);
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+
   const token = localStorage.getItem("token");
 
   // -----------------------------
@@ -53,6 +56,30 @@ function AdminDashboard() {
     fetchIssues();
     fetchOfficers();
   }, []);
+
+  // -----------------------------
+  // CLEAR FILTERS
+  // -----------------------------
+  const clearFilters = () => {
+    setFilterStatus("");
+    setFilterCategory("");
+  };
+
+  // -----------------------------
+  // FILTER LOGIC
+  // -----------------------------
+  const filteredIssues = issues.filter((issue) => {
+    const matchStatus = filterStatus ? issue.status === filterStatus : true;
+    const matchCategory = filterCategory ? issue.category === filterCategory : true;
+    return matchStatus && matchCategory;
+  });
+
+  // -----------------------------
+  // SORT BY PRIORITY (duplicateCount DESC)
+  // -----------------------------
+  const sortedIssues = [...filteredIssues].sort(
+    (a, b) => (b.duplicateCount || 0) - (a.duplicateCount || 0)
+  );
 
   // -----------------------------
   // ASSIGN OFFICER
@@ -106,35 +133,61 @@ function AdminDashboard() {
     }
   };
 
+  // -----------------------------
+  // RENDER
+  // -----------------------------
   return (
     <Box p={6}>
       <Heading mb={4}>Admin Dashboard</Heading>
 
-      {/* ---------------------------------------------- */}
-      {/* ADD OFFICER + REFRESH BUTTON - RIGHT ALIGNED    */}
-      {/* ---------------------------------------------- */}
+      {/* ACTION BUTTONS */}
       <Flex justify="flex-end" mb={6} gap={4}>
-        <Button
-          as={Link}
-          to="/admin/add-officer"
-          colorScheme="purple"
-        >
+        <Button as={Link} to="/admin/add-officer" colorScheme="purple">
           Add Officer
         </Button>
 
-        <Button
-          colorScheme="purple"
-          variant="outline"
-          onClick={fetchIssues}
-        >
+        <Button as={Link} to="/admin/add-admin" colorScheme="purple">
+          Add Admin
+        </Button>
+
+        <Button colorScheme="purple" variant="outline" onClick={fetchIssues}>
           Refresh
         </Button>
       </Flex>
 
-      {/* ---------------------------------------------- */}
-      {/* ISSUE LIST                                      */}
-      {/* ---------------------------------------------- */}
-      {issues.map((issue) => (
+      {/* FILTERS */}
+      <Flex gap={4} mb={6} wrap="wrap">
+        <Select
+          placeholder="Filter by Status"
+          width="200px"
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+        >
+          <option value="Pending">Pending</option>
+          <option value="Verified">Verified</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Resolved">Resolved</option>
+        </Select>
+
+        <Select
+          placeholder="Filter by Category"
+          width="200px"
+          value={filterCategory}
+          onChange={(e) => setFilterCategory(e.target.value)}
+        >
+          <option value="Road Damage">Road Damage</option>
+          <option value="Garbage">Garbage</option>
+          <option value="Water Leakage">Water Leakage</option>
+          <option value="Street Light">Street Light</option>
+        </Select>
+
+        <Button colorScheme="purple" variant="outline" onClick={clearFilters}>
+          Clear Filters
+        </Button>
+      </Flex>
+
+      {/* ISSUE LIST */}
+      {sortedIssues.map((issue) => (
         <Box
           key={issue._id}
           p={6}
@@ -148,6 +201,12 @@ function AdminDashboard() {
           </Heading>
 
           <Text color="gray.600">{issue.description}</Text>
+
+          {issue.duplicateCount > 1 && (
+            <Text color="red.500" fontWeight="bold" mt={1}>
+              ⚠ Reported by {issue.duplicateCount} users
+            </Text>
+          )}
 
           <Text mt={2} fontWeight="bold" color="purple.600">
             Status: {issue.status}
@@ -178,10 +237,7 @@ function AdminDashboard() {
           <Divider my={4} />
 
           {/* Update Status */}
-          <Text mb={2} fontWeight="semibold">
-            Update Status:
-          </Text>
-
+          <Text mb={2} fontWeight="semibold">Update Status:</Text>
           <Select
             placeholder="Change status"
             onChange={(e) => updateStatus(issue._id, e.target.value)}
@@ -192,12 +248,7 @@ function AdminDashboard() {
             <option value="Resolved">Resolved</option>
           </Select>
 
-          <Button
-            mt={4}
-            colorScheme="purple"
-            as={Link}
-            to={`/issue/${issue._id}`}
-          >
+          <Button mt={4} colorScheme="purple" as={Link} to={`/issue/${issue._id}`}>
             View Details
           </Button>
         </Box>

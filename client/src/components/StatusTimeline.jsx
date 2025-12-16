@@ -5,9 +5,12 @@ const steps = ["Pending", "Verified", "In Progress", "Resolved"];
 export default function StatusTimeline({ currentStatus }) {
   return (
     <Flex mt={4} gap={4} wrap="wrap">
-      {steps.map((step, index) => {
-        const isCompleted = steps.indexOf(currentStatus) > index;
-        const isCurrent = currentStatus === step;
+      {steps.map((step) => {
+        const currentIndex = steps.indexOf(currentStatus);
+        const stepIndex = steps.indexOf(step);
+
+        const isCurrent = stepIndex === currentIndex;
+        const isCompleted = stepIndex < currentIndex;
 
         return (
           <Box
@@ -21,10 +24,11 @@ export default function StatusTimeline({ currentStatus }) {
               isCurrent
                 ? "purple.600"
                 : isCompleted
-                ? "purple.200"
+                ? "purple.300"
                 : "gray.300"
             }
             color={isCurrent ? "white" : "black"}
+            boxShadow={isCurrent ? "md" : "none"}
           >
             {step}
           </Box>

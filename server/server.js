@@ -20,6 +20,7 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/issues", require("./routes/issueRoutes"));
 app.use("/api/stats", require("./routes/statsRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/contact", require("./routes/contactRoutes"));
 
 // Database Connection + Server Start
 mongoose

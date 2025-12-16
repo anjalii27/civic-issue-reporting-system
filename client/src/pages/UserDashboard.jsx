@@ -48,6 +48,23 @@ function UserDashboard() {
     (issue) => issue?.createdBy?._id === userId
   );
 
+  const deleteIssue = async (id) => {
+  if (!confirm("Are you sure you want to delete this issue?")) return;
+
+  const res = await fetch(`${API_URL}/api/issues/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await res.json();
+  alert(data.message);
+
+  fetchIssues(); // Refresh list
+};
+
+
   return (
     <Flex direction="column" p={8} bg="gray.50" minH="100vh">
       
@@ -119,16 +136,26 @@ function UserDashboard() {
                 Assigned to Officer: {issue.assignedTo.name}
               </Text>
             )}
-
+            <Flex gap = {3}>
+            <Button
+            colorScheme="red"
+            variant="outline"
+            size="sm"
+            mt={3}
+            onClick={() => deleteIssue(issue._id)}
+            >
+           Delete Issue
+            </Button>
             <Button
               as={Link}
               to={`/issue/${issue._id}`}
               colorScheme="purple"
               size="sm"
-              mt={4}
+              mt={3}
             >
               View Details
             </Button>
+            </Flex>
           </Box>
         ))}
       </VStack>

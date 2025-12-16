@@ -12,12 +12,14 @@ import {
   ModalBody,
   useDisclosure
 } from "@chakra-ui/react";
+
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { API_URL } from "../utils/api";
+import StatusTimeline from "../components/StatusTimeline";
 
 function IssueDetails() {
-  const { id } = useParams(); // Issue ID from URL
+  const { id } = useParams();
 
   const [issue, setIssue] = useState(null);
   const [officers, setOfficers] = useState([]);
@@ -32,13 +34,13 @@ function IssueDetails() {
     if (role === "admin") fetchOfficers();
   }, []);
 
-  // Fetch the issue by ID
+  // -----------------------------
+  // FETCH SINGLE ISSUE
+  // -----------------------------
   const fetchIssue = async () => {
     try {
       const res = await fetch(`${API_URL}/api/issues/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       const data = await res.json();
@@ -51,20 +53,25 @@ function IssueDetails() {
     }
   };
 
-  // Fetch all officers (Admin Only)
+  // -----------------------------
+  // FETCH OFFICERS
+  // -----------------------------
   const fetchOfficers = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/auth/officers`, {
+      const res = await fetch(`${API_URL}/api/admin/officers`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       const data = await res.json();
-      setOfficers(data);
+      setOfficers(data.officers || []);
     } catch (err) {
       console.error(err);
     }
   };
 
-  // Assign officer (Admin Only)
+  // -----------------------------
+  // ASSIGN OFFICER
+  // -----------------------------
   const assignOfficer = async (officerId) => {
     try {
       const res = await fetch(`${API_URL}/api/issues/assign/${id}`, {
@@ -86,7 +93,9 @@ function IssueDetails() {
     }
   };
 
-  // Update issue status (Admin + Officer)
+  // -----------------------------
+  // UPDATE STATUS
+  // -----------------------------
   const updateStatus = async (newStatus) => {
     try {
       const res = await fetch(`${API_URL}/api/issues/status/${id}`, {
@@ -108,7 +117,31 @@ function IssueDetails() {
     }
   };
 
-  // Loading spinner
+  {role === "user" && issue.createdBy?._id === localStorage.getItem("userId") && (
+  <Box mt={6}>
+    <Button
+      colorScheme="red"
+      onClick={async () => {
+        if (!confirm("Are you sure you want to delete this issue?")) return;
+
+        const res = await fetch(`${API_URL}/api/issues/${id}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const data = await res.json();
+        alert(data.message);
+        window.location.href = "/user-dashboard";
+      }}
+    >
+      Delete Issue
+    </Button>
+  </Box>
+)}
+
+
   if (loading)
     return (
       <Flex justify="center" mt={20}>
@@ -117,6 +150,11 @@ function IssueDetails() {
     );
 
   if (!issue) return <Text>Issue not found.</Text>;
+
+  // Normalized image URL (fixes broken image issue)
+  const imageURL = issue.imageUrl
+    ? `${API_URL.replace(/\/$/, "")}${issue.imageUrl.startsWith("/") ? issue.imageUrl : "/" + issue.imageUrl}`
+    : null;
 
   return (
     <Flex direction="column" p={8} bg="gray.50" minH="100vh">
@@ -148,7 +186,7 @@ function IssueDetails() {
 
         {/* Location */}
         <Text mt={1} color="gray.600">
-          Location: {issue.location}
+          Location: {issue.locationText || "Not provided"}
         </Text>
 
         {/* Timestamps */}
@@ -161,36 +199,35 @@ function IssueDetails() {
         </Text>
 
         {/* Image Preview */}
-        {issue.imageUrl && (
-  <>
-    {/* Small Preview */}
-    <Image
-      src={`${API_URL}${issue.imageUrl}`}
-      alt="Issue"
-      boxSize="150px"
-      objectFit="cover"
-      borderRadius="md"
-      cursor="pointer"
-      onClick={onOpen}
-      border="2px solid #ddd"
-    />
+        {imageURL && (
+          <>
+            <Image
+              src={imageURL}
+              alt="Issue"
+              boxSize="150px"
+              objectFit="cover"
+              borderRadius="md"
+              cursor="pointer"
+              onClick={onOpen}
+              border="2px solid #ddd"
+              mt={4}
+            />
 
-    {/* Modal for Enlarged Image */}
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size="xl">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalBody p={0}>
-          <Image
-            src={`${API_URL}${issue.imageUrl}`}
-            alt="Issue Large Preview"
-            width="100%"
-            borderRadius="md"
-          />
-        </ModalBody>
-      </ModalContent>
-    </Modal>
-  </>
-)}
+            <Modal isOpen={isOpen} onClose={onClose} isCentered size="xl">
+              <ModalOverlay />
+              <ModalContent>
+                <ModalBody p={0}>
+                  <Image
+                    src={imageURL}
+                    alt="Issue Large Preview"
+                    width="100%"
+                    borderRadius="md"
+                  />
+                </ModalBody>
+              </ModalContent>
+            </Modal>
+          </>
+        )}
 
         {/* Status */}
         <Text mt={4} fontWeight="bold" color="purple.500">
@@ -199,32 +236,8 @@ function IssueDetails() {
 
         {/* Status Timeline */}
         <Box mt={5}>
-          <Text fontWeight="bold" mb={2}>
-            Issue Progress:
-          </Text>
-
-          <Flex gap={4} align="center" wrap="wrap">
-            {["Pending", "Verified", "In Progress", "Resolved"].map((stage) => (
-              <Box
-                key={stage}
-                p={2}
-                borderRadius="md"
-                bg={
-                  stage === "Pending" ||
-                  (stage === "Verified" &&
-                    ["Verified", "In Progress", "Resolved"].includes(issue.status)) ||
-                  (stage === "In Progress" &&
-                    ["In Progress", "Resolved"].includes(issue.status)) ||
-                  (stage === "Resolved" && issue.status === "Resolved")
-                    ? "purple.500"
-                    : "gray.300"
-                }
-                color="white"
-              >
-                {stage}
-              </Box>
-            ))}
-          </Flex>
+          <Text mt={4} fontWeight="bold">Issue Progress:</Text>
+          <StatusTimeline currentStatus={issue.status} />
         </Box>
 
         {/* Reported By */}
@@ -245,10 +258,8 @@ function IssueDetails() {
         {role === "admin" && (
           <Box mt={6}>
             <Text fontWeight="bold">Assign Officer:</Text>
-            <Select
-              placeholder="Select officer"
+            <Select placeholder="Select officer" mt={2}
               onChange={(e) => assignOfficer(e.target.value)}
-              mt={2}
             >
               {officers.map((o) => (
                 <option key={o._id} value={o._id}>
@@ -263,9 +274,7 @@ function IssueDetails() {
         {(role === "admin" || role === "officer") && (
           <Box mt={6}>
             <Text fontWeight="bold">Update Status:</Text>
-            <Select
-              placeholder="Select new status"
-              mt={2}
+            <Select mt={2} placeholder="Select new status"
               onChange={(e) => updateStatus(e.target.value)}
             >
               <option value="Verified">Verified</option>
